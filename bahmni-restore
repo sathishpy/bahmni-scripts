@@ -1,0 +1,57 @@
+#!/usr/bin/python
+import subprocess
+import sys
+
+def run_command(command):
+    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in p.stdout.readlines():
+        print line
+    retval = p.wait()
+
+def get_backup_name(file):
+    fileHandle = open(file, "r")
+    lineList = fileHandle.readlines()
+    fileHandle.close()
+    lastLineIndex = len(lineList)-1
+    if lineList[lastLineIndex].isspace():
+        lastLineIndex -= 1
+    words = lineList[lastLineIndex].split()
+    return words[2]
+
+if (len(sys.argv) != 2):
+    print "Usage: bahmni-restore <backup-file>"
+    sys.exit(1)
+
+backupfile = sys.argv[1]
+print "Restoring from file:", backupfile
+tarcmd = "tar -xzf %s -C /data/" % backupfile
+print tarcmd
+run_command(tarcmd)
+
+openmrs_backup = get_backup_name("/data/bahmni-backup/openmrs/backup_info.txt")
+reports_backup = get_backup_name("/data/bahmni-backup/reports/backup_info.txt")
+postgres_backup = get_backup_name("/data/bahmni-backup/postgres/backup_info.txt")
+
+print "Restoring openmrs backup : ", openmrs_backup
+restore_cmd = "bahmni -i local restore -rt db -op openmrs -st pitr -rp %s" % openmrs_backup
+print "Running cmd:", restore_cmd
+run_command(restore_cmd)
+
+print "Restoring postgres backup: ", postgres_backup
+restore_cmd = "bahmni -i local restore -rt db -op postgres -st pitr -rp %s" % postgres_backup
+print "Running cmd:", restore_cmd
+run_command(restore_cmd)
+
+print "Restoring reports: ", reports_backup
+restore_cmd = "bahmni -i local restore -rt db -op bahmni_reports -st pitr -rp %s" % reports_backup
+print "Running cmd:", restore_cmd
+run_command(restore_cmd)
+
+print "Artifacts restore not supported..."
+#restore_cmd = "bahmni -i local restore --restore_type=file  --options=all"
+#run_command(restore_cmd)
+
+restart_cmd = "bahmni -i local restart"
+print "Restarting services"
+run_command(restart_cmd)
+

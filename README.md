@@ -1,1 +1,1 @@
-# bahmni-scripts
+Some utility functions with minimal error checking and minimal unit testing
