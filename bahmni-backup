@@ -24,7 +24,8 @@ else:
     print "/etc/bahmni-backrest.conf is not updated to point the backups to /data/bahmni-backup/"
     sys.exit(1)
 
-#run_command("bahmni -i local backup --backup_type=all --options=all")
+print "Taking backup, please wait..."
+run_command("bahmni -i local backup --backup_type=all --options=all")
 openmrs_backup = get_backup_name("/data/bahmni-backup/openmrs/backup_info.txt")
 reports_backup = get_backup_name("/data/bahmni-backup/reports/backup_info.txt")
 postgres_backup = get_backup_name("/data/bahmni-backup/postgres/backup_info.txt")
